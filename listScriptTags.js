@@ -19,7 +19,7 @@ async function listScriptTags() {
     console.log(res.data.script_tags);
   } catch (error) {
     console.error(
-      '❌ Failed to list ScriptTags',
+      'Failed to list ScriptTags',
       error.response?.data || error.message
     );
   }

@@ -29,54 +29,7 @@
   `;
   modal.style.display = 'none';
 
-  window.addEventListener('message', async (event) => {
-    if (event.data?.type === 'CUSTOMIZER_SAVED') {
-      const sessionId = event.data.sessionId;
-      console.log('🧪 Received session ID from iframe:', sessionId);
-      if (!sessionId) return;
-
-      try {
-        const res = await fetch(
-          `https://customizer-api-l1w1.onrender.com/customize/${sessionId}`
-        );
-        const data = await res.json();
-
-        if (
-          !document.querySelector('[name="properties[tshirtColor]"]')
-        ) {
-          const form = document.querySelector(
-            'form[action*="/cart/add"]'
-          );
-          if (!form) {
-            console.warn(
-              '⚠️ Product form not found at injection time.'
-            );
-            return;
-          }
-
-          ['tshirtColor', 'fontStyle', 'message'].forEach((key) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `properties[${key}]`;
-            input.value = data[key];
-            form.appendChild(input);
-          });
-          console.log(
-            '✅ Injected customization data into form:',
-            data
-          );
-        }
-      } catch (err) {
-        console.error(
-          '❌ Could not fetch customization session data:',
-          err
-        );
-      }
-    }
-  });
-
   document.body.appendChild(modal);
-  // test
 
   button.onclick = (e) => {
     e.preventDefault();
@@ -88,26 +41,16 @@
       modal.style.display = 'none';
 
       const sessionId = localStorage.getItem('customizerToken');
-      console.log('🧪 Found localStorage session:', sessionId);
       if (!sessionId) return;
 
       try {
-        const res = await fetch(
-          `https://customizer-api-l1w1.onrender.com/customize/${sessionId}`
-        );
+        const res = await fetch(`https://customizer-api-l1w1.onrender.com/customize/${sessionId}`);
         const data = await res.json();
-        console.log('🧪 Fetched session data:', data);
 
-        if (
-          !document.querySelector('[name="properties[tshirtColor]"]')
-        ) {
-          const form = document.querySelector(
-            'form[action*="/cart/add"]'
-          );
+        if (!document.querySelector('[name="properties[tshirtColor]"]')) {
+          const form = document.querySelector('form[action="/cart/add"], .form');
           if (!form) {
-            console.warn(
-              '⚠️ Product form not found at injection time.'
-            );
+            console.warn('Product form not found at injection time.');
             return;
           }
 
@@ -118,24 +61,18 @@
             input.value = data[key];
             form.appendChild(input);
           });
-          console.log(
-            '✅ Injected customization data into form:',
-            data
-          );
+          console.log('Injected customization data into form:', data);
         }
       } catch (err) {
-        console.error(
-          '❌ Could not fetch customization session data:',
-          err
-        );
+        console.error('Could not fetch customization session data:', err);
       }
     }
   });
 
-  const target = document.querySelector('form[action*="/cart/add"]');
+  const target = document.querySelector('form[action="/cart/add"], .form');
   if (target) {
     target.appendChild(button);
   } else {
-    console.log('⚠️ Could not find target form to inject button.');
+    console.log('Could not find target form to inject button.');
   }
 })();
