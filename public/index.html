@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Customize T-Shirt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="bg-gray-100 flex items-center justify-center min-h-screen"
+  >
+    <div
+      class="bg-white shadow-lg rounded-xl p-8 max-w-md w-full space-y-4"
+    >
+      <h2 class="text-xl font-semibold text-gray-800">
+        Customize Your T-Shirt
+      </h2>
+
+      <form id="customizer-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium"
+            >T-Shirt Color</label
+          >
+          <select
+            name="tshirtColor"
+            class="w-full mt-1 p-2 border rounded"
+            required
+          >
+            <option value="">Select Color</option>
+            <option value="Black">Black</option>
+            <option value="White">White</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium"
+            >Custom Message</label
+          >
+          <input
+            type="text"
+            name="message"
+            class="w-full mt-1 p-2 border rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Font Style</label>
+          <select
+            name="fontStyle"
+            class="w-full mt-1 p-2 border rounded"
+            required
+          >
+            <option value="">Select Font</option>
+            <option value="Arial">Arial</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Courier New">Courier New</option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+        >
+          Save Design
+        </button>
+      </form>
+
+      <div class="mt-6 border-t pt-4">
+        <h3 class="text-lg font-semibold mb-2 text-center">
+          Preview
+        </h3>
+        <div
+          id="preview-box"
+          class="w-full h-48 rounded flex items-center justify-center border relative"
+          style="background-color: white"
+        >
+          <span
+            id="preview-text"
+            class="text-2xl font-bold text-center"
+          ></span>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button
+          id="checkout-button"
+          class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 hidden"
+        >
+          Checkout
+        </button>
+      </div>
+
+      <div
+        id="status"
+        class="text-green-600 font-semibold hidden text-center mt-4"
+      >
+        Customization saved and ready for checkout.
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('customizer-form');
+      const previewBox = document.getElementById('preview-box');
+      const previewText = document.getElementById('preview-text');
+      const checkoutBtn = document.getElementById('checkout-button');
+      const status = document.getElementById('status');
+
+      ['tshirtColor', 'message', 'fontStyle'].forEach((field) => {
+        document
+          .querySelector(`[name="${field}"]`)
+          .addEventListener('input', updatePreview);
+      });
+
+      if (res.ok && data.sessionId) {
+        window.parent.postMessage(
+          { type: 'CUSTOMIZER_SAVED', sessionId: data.sessionId },
+          '*'
+        );
+        document.getElementById('status').classList.remove('hidden');
+      }
+
+      function updatePreview() {
+        const color = form.tshirtColor.value;
+        const message = form.message.value;
+        const font = form.fontStyle.value;
+
+        previewBox.style.backgroundColor =
+          color.toLowerCase() || 'white';
+        previewText.style.fontFamily = font || 'sans-serif';
+        previewText.textContent = message || '';
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const tshirtColor = form.tshirtColor.value;
+        const message = form.message.value;
+        const fontStyle = form.fontStyle.value;
+
+        const payload = { tshirtColor, message, fontStyle };
+
+        try {
+          const res = await fetch('/customize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.sessionId) {
+            localStorage.setItem('customizerToken', data.sessionId);
+            status.classList.add('hidden');
+            checkoutBtn.classList.remove('hidden');
+          } else {
+            alert('Error saving customization');
+          }
+        } catch (err) {
+          alert('Network error or invalid response.');
+          console.error(err);
+        }
+      });
+
+      checkoutBtn.addEventListener('click', () => {
+        status.textContent =
+          '✅ Customization saved and ready for checkout.';
+        status.classList.remove('hidden');
+      });
+    </script>
+  </body>
+</html>
